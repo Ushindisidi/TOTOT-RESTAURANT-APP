@@ -1,4 +1,6 @@
-# Python
+# ===================
+# Python artifacts
+# ===================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -20,8 +22,9 @@ wheels/
 .installed.cfg
 *.egg
 
+# ===================
 # Virtual environments
-.env
+# ===================
 .venv
 env/
 venv/
@@ -29,14 +32,18 @@ ENV/
 env.bak/
 venv.bak/
 
-# IDE
+# ===================
+# IDE/editor files
+# ===================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# ===================
+# Operating system files
+# ===================
 .DS_Store
 .DS_Store?
 ._*
@@ -45,34 +52,48 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Git
+# ===================
+# Git & version control
+# ===================
 .git/
 .gitignore
 .gitattributes
 
+# ===================
 # Documentation
+# ===================
 README.md
 *.md
 docs/
 
-# Docker
+# ===================
+# Docker files
+# ===================
 Dockerfile*
 docker-compose*.yml
 .dockerignore
 
+# ===================
 # Logs
+# ===================
 *.log
 logs/
 
+# ===================
 # Testing
+# ===================
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Jupyter
+# ===================
+# Jupyter notebooks
+# ===================
 .ipynb_checkpoints/
 
-# Models and large files (if you're not including them in the image)
+# ===================
+# Models and large files
+# ===================
 models/
 *.bin
 *.safetensors
