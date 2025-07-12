@@ -31,10 +31,6 @@ RUN pip install --upgrade pip setuptools wheel
 
 # Copy requirements and install dependencies
 COPY src/requirements.txt .
-# Install numpy and scipy first to ensure wheels are built before other packages
-RUN pip install --no-cache-dir --retries 10 --timeout 120 -i https://pypi.org/simple numpy scipy
-# Install CPU-only torch (no CUDA, much smaller)
-RUN pip install torch==2.1.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip install --no-cache-dir --retries 10 --timeout 120 -i https://pypi.org/simple -r requirements.txt
 
 # Copy the entire application

@@ -1,6 +1,7 @@
 import os
 import logging
-from langchain_community.embeddings import HuggingFaceEmbeddings 
+from dotenv import load_dotenv
+from langchain_google_genai import GoogleGenerativeAIEmbeddings 
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -9,11 +10,14 @@ from typing import List, Dict, Any, Tuple
 
 from pinecone import Pinecone
 
+# Load environment variables
+load_dotenv()
+
 logger = logging.getLogger(__name__)
 
 # --- Configuration for Embeddings ---
-EMBEDDING_MODEL_ID = "all-MiniLM-L6-v2"
-EMBEDDING_DIMENSION = 384 
+EMBEDDING_MODEL_ID = "models/embedding-001"
+EMBEDDING_DIMENSION = 768
 
 class RAGService:
     def __init__(self):  
@@ -34,24 +38,29 @@ class RAGService:
             pinecone_api_key = settings.PINECONE_API_KEY
             pinecone_environment = settings.PINECONE_ENVIRONMENT
             pinecone_index_name = settings.PINECONE_INDEX_NAME
+            google_api_key = os.getenv("GOOGLE_API_KEY")
 
             if not pinecone_api_key or not pinecone_environment or not pinecone_index_name:
                 logger.error(f"[{settings.APP_NAME}] Pinecone API Key, Environment, or Index Name not found in settings. RAG will not be available.")
                 self.vectorstore = None
                 return
 
+            if not google_api_key:
+                logger.error(f"[{settings.APP_NAME}] Google API Key not found in environment variables. RAG will not be available.")
+                self.vectorstore = None
+                return
+
             #  Initializing Pinecone client 
             logger.info(f"[{settings.APP_NAME}] Initializing Pinecone client...")
-            self.pinecone_client = Pinecone(api_key=pinecone_api_key, environment=pinecone_environment)
+            self.pinecone_client = Pinecone(api_key=pinecone_api_key)
             logger.info(f"[{settings.APP_NAME}] Pinecone client initialized.")
 
-            logger.info(f"[{settings.APP_NAME}] Initializing embedding model for RAG: {EMBEDDING_MODEL_ID}...")
-            self.embeddings = HuggingFaceEmbeddings( 
-                model_name=EMBEDDING_MODEL_ID,
-                model_kwargs={'device': 'cpu'}, 
-                encode_kwargs={'normalize_embeddings': True}
+            logger.info(f"[{settings.APP_NAME}] Initializing Google Generative AI embedding model for RAG...")
+            self.embeddings = GoogleGenerativeAIEmbeddings(
+                model=EMBEDDING_MODEL_ID,
+                google_api_key=google_api_key
             )
-            logger.info(f"[{settings.APP_NAME}] Embedding model for RAG initialized.")
+            logger.info(f"[{settings.APP_NAME}] Google Generative AI embedding model for RAG initialized.")
 
             logger.info(f"[{settings.APP_NAME}] Connecting to Pinecone index: {pinecone_index_name}...")
             #  Getting the Pinecone index object 
@@ -78,16 +87,16 @@ class RAGService:
             )
             
             template = """You are a helpful AI assistant for Totot Traditional Restaurant.
-            Use the following context to answer the question.
-            If you don't know the answer based on the context, politely state that you don't have enough information.
+Use the following context to answer the question.
+If you don't know the answer based on the context, politely state that you don't have enough information.
 
-            Context:
-            {context}
+Context:
+{context}
 
-            Question: {question}
+Question: {question}
 
-            Answer:
-            """
+Answer:
+"""
             rag_prompt = ChatPromptTemplate.from_template(template)
             
             self.rag_chain = (
